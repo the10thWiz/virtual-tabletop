@@ -1,0 +1,11 @@
+{% extends "base" %}
+{% block title %}Virtual Tabletop{% endblock title %}
+{% block content %}
+<div class="container-fluid d-flex flex-column align-items-center" style="height: 0;">
+  <div class="card position-relative fs-2 bg-dark text-white" style="z-index: 100; top: -1rem;">
+    <div class="card-body">
+      Virtual Tabletop - play tabletop games online for free!
+    </div>
+  </div>
+</div>
+{% endblock content %}

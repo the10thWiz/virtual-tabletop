@@ -1,0 +1,97 @@
+{% import "icons" as icons %}
+{% import "snippets" as snippets %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}{% endblock title %}</title>
+  <link rel="stylesheet" href="/css/bootstrap.css" />
+  <link rel="stylesheet" href="/css/free.min.css" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="author help" href="/help" />
+  {% if update_url is defined and update_url != "" %}
+  <script>
+    window.history.replaceState({}, null, "{{ update_url | safe }}");
+  </script>
+  {% endif %}
+</head>
+
+<body class="d-flex flex-column justify-content-start min-vh-100" style="overflow-x: hidden;">
+{% block nav_bar %}
+  <nav class="container-fluid navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+    <a class="navbar-brand" href="/">Virtual tabletop</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
+      <ul class="navbar-nav mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" {% if page=="TODO" %}href="#" {% else %}href="/table/find" {% endif %}>Find Table</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" {% if page=="TODO" %}href="#" {% else %}href="/table/create" {% endif %}>Create Table</a>
+        </li>
+        {% if user.username is defined %}
+        <li class="nav-item">
+          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false"
+            href="#">Saved Tables</a>
+          <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+            <li>
+              <a class="dropdown-item" href="/account/tables">My Tables</a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="/account/">TODO</a>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false"
+            href="#">{{ user.username }}</a>
+          <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+            <li>
+              <a class="dropdown-item" href="/account/update">Account Settings</a>
+            </li>
+            <li><a class="dropdown-item" href="/account/logout">Logout</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item">
+          <a class="nav-link" {% if page=="login" %}href="#" {% else %}href="/account/login" {% endif %}>Login</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </nav>
+{% endblock nav_bar %}
+
+{% block content %}
+  {{ something | filter }}
+  <div id="content">TODO!</div>
+{% endblock content %}
+
+{% block footer %}
+  <footer class="container-fluid navbar navbar-expand-lg navbar-dark bg-dark mt-auto">
+    <a class="navbar-brand" href="/">Virtual Tabletop</a>
+    <div class="flex-grow-1"></div>
+    <ul class="navbar-nav mb-2 mb-lg-0 flex-sm-row">
+      <li class="nav-item mx-2">
+        <a class="text-white" href="/legal/privacy">Privacy Notice</a>
+      </li>
+      <li class="nav-item mx-2">
+        <a class="text-white" href="/legal/settings">Privacy Settings</a>
+      </li>
+      <li class="nav-item mx-2">
+        <a class="text-white" href="/legal/terms">Terms of Use</a>
+      </li>
+    </ul>
+  </footer>
+  {% endblock footer %}
+
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/jquery-3.6.0.min.js"></script>
+  {% block script %}{% endblock %}
+</body>
+
+</html>

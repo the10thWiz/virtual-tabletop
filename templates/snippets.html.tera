@@ -1,0 +1,216 @@
+{% macro modal_form(id, action, method="POST", title, submit="Save Changes", inputs) %}
+<div class="modal fade" tabindex="-1" id="{{ id | safe }}">
+  <form action="{{ action | safe }}" method="{{ method }}" enctype="multipart/form-data">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ title }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          {{ inputs | safe }}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Close
+          </button>
+          <button type="submit" class="btn btn-primary">
+            {{ submit }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endmacro modal_form %}
+
+{% macro lorem_ipsum() %}
+<p>
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin congue eros sed
+  metus feugiat, a placerat nibh gravida. Sed condimentum nunc nibh, in facilisis
+  felis venenatis sit amet. Sed ut mauris accumsan, convallis purus sit amet,
+  luctus nulla. In hac habitasse platea dictumst. Aliquam interdum felis non
+  vestibulum suscipit. Proin in leo non quam scelerisque viverra sit amet ut
+  lacus. Nam consectetur, purus eu rutrum vehicula, risus massa porttitor nisl,
+  id interdum nunc sem ut nulla. Integer rhoncus risus in lectus varius, vitae
+  commodo lectus ornare. Integer condimentum augue vitae est tincidunt, non ultricies
+  neque tempor.
+</p>
+
+<p>
+  Suspendisse eu fringilla ex. Nunc euismod mauris vitae elit volutpat, in vulputate
+  diam venenatis. Donec nec malesuada tellus. Praesent a neque diam. Vestibulum
+  consectetur consectetur ex, eget cursus erat rutrum vitae. Integer aliquet
+  a turpis sed pretium. Phasellus nunc nisi, rhoncus non posuere quis, ultrices
+  vitae neque. Vestibulum vehicula sem magna, ut facilisis leo finibus vel. Suspendisse
+  potenti. Nulla ultricies erat quis tortor iaculis congue. Quisque iaculis dictum
+  bibendum. Fusce fringilla dolor sit amet arcu convallis commodo. Aliquam erat
+  volutpat.
+</p>
+
+<p>
+  Sed ipsum mauris, auctor sed justo ac, lobortis luctus dolor. Etiam orci lacus,
+  sodales non turpis sed, cursus pulvinar justo. Morbi molestie, justo in hendrerit
+  lacinia, diam sem molestie tortor, a fringilla ligula dui aliquet massa. Cras
+  nec malesuada diam. Praesent id nibh congue, feugiat risus nec, vehicula diam.
+  Etiam eu leo id urna lacinia placerat in nec diam. In vitae mauris odio. In
+  hac habitasse platea dictumst.
+</p>
+
+<p>
+  Aliquam in elementum tellus. Duis eget vulputate massa. Vestibulum vel condimentum
+  nisi. Proin aliquet gravida velit eget luctus. Aliquam porttitor ac arcu vitae
+  placerat. Suspendisse potenti. Pellentesque vitae ante sodales, fringilla massa
+  eu, dignissim purus. Vestibulum in ante non lectus maximus rhoncus a nec lacus.
+  Interdum et malesuada fames ac ante ipsum primis in faucibus. Cras id tincidunt
+  risus.
+</p>
+
+<p>
+  Sed consequat rutrum velit, id ultricies libero sodales eget. Sed ac dolor ante.
+  Fusce scelerisque ornare massa, at efficitur est euismod eget. Proin eu sapien
+  finibus, venenatis lacus id, congue enim. Sed euismod at quam et molestie.
+  Integer ullamcorper tempor libero, non semper dui pharetra vel. Etiam lacinia
+  et sapien sit amet fringilla. Integer leo turpis, gravida non rutrum id, sodales
+  nec dui. Nulla sed nulla in ante aliquet dapibus ut vitae eros. Suspendisse
+  ut hendrerit odio, non molestie ante.
+</p>
+{% endmacro lorem_ipsum %}
+
+{% macro carousel(id, slides) %}
+<div id="{{ id }}" class="carousel carousel-dark carousel-fade slide" data-bs-ride="carousel">
+  <div class="carousel-indicators">
+    {% for slide in slides %}
+    <button type="button" data-bs-target="#{{ id }}" data-bs-slide-to="{{ loop.index0 }}"
+      aria-label="Slide {{ loop.index }}"
+      {% if loop.index0 == 0 %} class="active"
+        aria-current="true" aria-label="Slide 1"
+      {% endif %}></button>
+    {% endfor %}
+  </div>
+  <div class="carousel-inner">
+    {% for slide in slides %}
+    <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}">
+      {{ slide | safe }}
+    </div>
+    {% endfor %}
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#{{ id }}" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#{{ id }}" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+{% endmacro carousel %}
+
+{% macro toasts(toasts) %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+  {% for id in toasts %}
+  <div id="{{ id }}" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto title"></strong>
+      <small><span class="time">0</span> secs ago</small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body"></div>
+  </div>
+  {% endfor %}
+  <script>
+    let toasts = {
+      show: function (id, title, content) {
+        document.querySelector('#'+id+' .time').textContent = 0;
+        document.querySelector('#'+id+' .title').textContent = title;
+        document.querySelector('#'+id+' .toast-body').innerHTML = content;
+        this[id].show();
+      },
+    };
+    window.addEventListener('load', () => {
+      for(let el of document.querySelectorAll('.toast')) {
+        toasts[el.id] = new bootstrap.Toast(el);
+      }
+      window.setInterval(() => {
+        for(let time of document.querySelectorAll('.time')) {
+          time.textContent = 1 + + time.textContent;
+        }
+      }, 1000);
+    });
+  </script>
+</div>
+{% endmacro toast %}
+
+{% macro toasts_a() %}
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+  {% set len = 3 %}
+  {% for id in range(start = 0, end = len) %}
+  <div id="toast{{ id }}" class="toast hide" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header">
+      <strong class="me-auto title"></strong>
+      <small><span class="time">0</span> secs ago</small>
+      <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body"></div>
+  </div>
+  {% endfor %}
+  <script>
+    let toasts = {
+      cur: 0,
+      show: function (title, content) {
+        document.querySelector('#toast'+this.cur+' .time').textContent = 0;
+        document.querySelector('#toast'+this.cur+' .title').textContent = title;
+        document.querySelector('#toast'+this.cur+' .toast-body').innerHTML = content;
+        this['toast' + this.cur].show();
+        this.cur = (this.cur + 1) % {{ len }};
+      },
+    };
+    window.addEventListener('load', () => {
+      for(let el of document.querySelectorAll('.toast')) {
+        toasts[el.id] = new bootstrap.Toast(el);
+      }
+      window.setInterval(() => {
+        for(let time of document.querySelectorAll('.time')) {
+          time.textContent = 1 + + time.textContent;
+        }
+      }, 1000);
+    });
+  </script>
+</div>
+{% endmacro toast %}
+
+{% macro calendar(date="today", form_name) %}
+<div class="calendar container text-center user-select-none" data-date="{{ date }}" data-start="" data-end="" data-range="" name="{{ form_name }}">
+  <div class="calendar_header row justify-content-around pt-2">
+    <button class="previous col-1 btn"><i class="fa fa-chevron-left"></i></button>
+    <button class="col-3 btn w-50" data-bs-toggle="collapse" data-bs-target="#cal_{{ form_name }}_months">
+      <i class="fa fa-chevron-down mx-4"></i>
+      <span class="month">Loading</span> <span class="year">Loading</span>
+      <i class="fa fa-chevron-down mx-4"></i>
+    </button>
+    <button class="next col-1 btn"><i class="fa fa-chevron-right"></i></button>
+  </div>
+  <div id="cal_{{ form_name }}_months" class="calendar_months row justify-content-around collapse hide ">
+    {% for year in [-3, -2, -1, 1, 2, 3] %}
+    <div style="width: 16.6666%" class="btn year-btn" data-year="{{ year }}">{{ year }}</div>
+    {% endfor %}
+    {% for month in ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] %}
+    <div style="width: 16.6666%" class="btn month-btn" data-month="{{ loop.index0 }}">{{ month }}</div>
+    {% endfor %}
+  </div>
+  <div class="calendar_weekdays row justify-content-around bg-primary py-2 my-2 rounded-3">
+    {% for day in ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] %}
+    <div style="width: 14.285714%">{{ day }}</div>
+    {% endfor %}
+  </div>
+  <div class="calendar_weekdays row justify-content-around">
+    {% for i in range(start=0, end=7*6) %}
+    <a class="btn rounded-0 hover-circle d-flex flex-column justify-content-center" style="width: 14.285714%;" draggable="true">
+      <div class="day" style="z-index: 5; position: relative;" data-day="{{ loop.index }}" data-date=""></div>
+    </a>
+    {% endfor %}
+  </div>
+  <input hidden name="{{ form_name }}_start" type="date" class="cal_form_start" value="">
+  <input hidden name="{{ form_name }}_end" type="date" class="cal_form_end" value="">
+</div>
+{% endmacro calendar %}
