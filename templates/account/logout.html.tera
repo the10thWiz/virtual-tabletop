@@ -1,0 +1,36 @@
+{% extends "base" %}
+{% block title %}Time Share{% endblock title %}
+{% block content %}
+<div class="container-fluid row">
+  <div class="col"></div>
+  <div class="col-lg-4">
+    <div class="alert alert-info mt-2 text-center" role="alert">You have been logged out</div>
+    <div class="alert alert-info mt-2 text-center" role="alert">You will be redirected shortly</div>
+    <div class="progress">
+      <style>
+        #timeout {
+          animation: timeout 4s linear 0s;
+        }
+
+        @keyframes timeout {
+          from {
+            width: 0;
+          }
+          to {
+            width: 100%;
+          }
+        }
+      </style>
+      <div id="timeout" class="progress-bar" role="progressbar" aria-hidden="true"></div>
+      <script>
+        let timeout = document.getElementById('timeout');
+        timeout.addEventListener('animationend', (e) => {
+          timeout.style.width = '100%';
+          window.location.pathname = '/';
+        });
+      </script>
+    </div>
+  </div>
+  <div class="col"></div>
+</div>
+{% endblock content %}

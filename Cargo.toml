@@ -8,5 +8,10 @@ edition = "2021"
 [dependencies]
 rocket = { version = "0.5.0-rc.1", path = "../Rocket/core/lib/", features = ["secrets", "json", "tls"] }
 rocket_dyn_templates = { version = "0.1.0-rc.1", path = "../Rocket/contrib/dyn_templates/", features = ["tera"] }
+rocket_db_pools = { version = "0.1.0-rc", path = "../Rocket/contrib/db_pools/lib/", features = ["sqlx_mysql"] }
+sqlx = { version = "*", features = ["macros"] }
+rocket-auth = { path = "../rocket-auth/", features = ["google", "tera", "sqlx"] }
 serde = { version = "*", features = ["derive"] }
 flurry = "*"
+enum-utils = "0.1.2"
+serde_repr = "^0.1"

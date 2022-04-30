@@ -1,0 +1,45 @@
+{% extends "base" %}
+{% block title %}Time Share{% endblock title %}
+{% block content %}
+<div class="container-fluid row">
+  <div class="col"></div>
+  <div class="col-lg-4">
+    <form action="/account/create" method="post" enctype="multipart/form-data">
+      {% if error is defined and error is string %}
+      <div class="alert alert-danger mt-2" role="alert">{{ error }}</div>
+      {% endif %}
+      <input
+        type="text"
+        class="form-control mt-2"
+        placeholder="Username"
+        name="username"
+        spellcheck="false"
+        required
+      />
+      <input
+        type="email"
+        class="form-control mt-2"
+        placeholder="Email"
+        name="email"
+        spellcheck="false"
+        required
+      />
+      <input
+        type="password"
+        class="form-control mt-2"
+        placeholder="Password"
+        name="password"
+        autocomplete="new-password"
+        required
+      />
+      <button type="submit" class="form-control mt-2 btn btn-primary">
+        Create Account
+      </button>
+      <a href="/account/login" class="d-block row mt-2" style="text-align: center;">
+        Login
+      </a>
+    </form>
+  </div>
+  <div class="col"></div>
+</div>
+{% endblock content %}

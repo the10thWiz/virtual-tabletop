@@ -1,0 +1,20 @@
+## defaults for _all_ profiles
+[default]
+#address = "0.0.0.0"
+limits = { forms = "64 kB", json = "1 MiB" }
+#tls = { certs = "./certificate.pem", key = "./key.pem" }
+
+secret_key = "DGWLePDFzHHTIHEutDhghaAvP4iyLTBTWr/HMmY4EGM="
+
+## set only when compiled in debug mode, i.e, `cargo build`
+[debug]
+port = 8000
+## only the `json` key from `default` will be overridden; `forms` will remain
+limits = { json = "10MiB" }
+
+[global.databases]
+tabletop = { url = "mysql://rocket_sql:test@localhost/tabletop" }
+
+[default.rocket_auth]
+timeout = 4
+google_client_id = "443833525432-fk1jqejvs0hgv5mhjkhsqv9g0u6s7rnf.apps.googleusercontent.com"
