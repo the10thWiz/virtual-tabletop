@@ -7,17 +7,36 @@
       Enter code to find a Virtual Tabletop
     </div>
   </div>
-  <div class="row">
+  <div class="row container">
     <div class="col-2"></div>
     <div class="col gy-2">
-      <div class="input-group mb-3">
-        <input type="text" class="form-control" placeholder="Enter Code" id="search_input" />
-        <button class="btn btn-outline-secondary" type="button" id="search_button">
+      {% if error is defined and error is string %}
+      <div class="alert alert-danger mt-2" role="alert">{{ error }}</div>
+      {% endif %}
+      <form class="input-group mb-3" action="/find" method="POST">
+        <input type="text" class="form-control" placeholder="Enter Code" name="code" pattern="[0-9a-f]{4}" required />
+        <button class="btn btn-outline-secondary" type="submit">
           {{ icons::search_fill() }}
         </button>
-      </div>
+      </form>
     </div>
     <div class="col-2"></div>
   </div>
 </div>
 {% endblock content %}
+{% block script %}
+<script>
+let code = $('[name="code"]');
+code.on('input', () => {
+  code[0].setCustomValidity('');
+  code[0].checkValidity();
+});
+code.on('invalid', () => {
+  if(code.val() === '') {
+    code[0].setCustomValidity('Enter a code');
+  } else {
+    code[0].setCustomValidity('Codes are four digits or letters from a-f');
+  }
+});
+</script>
+{% endblock script %}

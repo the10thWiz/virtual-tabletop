@@ -7,14 +7,18 @@ use account::{DBConnInst, PUser, UserInfo};
 use chrono::Utc;
 use rand::Rng;
 use rocket::{
+    form::Form,
     fs::{FileServer, Options},
     futures::TryStreamExt,
-    get, message, post,
+    get,
+    http::{Status, uri},
+    message, post,
     request::FromParam,
+    response::Redirect,
     routes,
     serde::json::Json,
     websocket::Channel,
-    Responder, State,
+    FromForm, Responder, State,
 };
 use rocket_auth::AuthFairing;
 use rocket_db_pools::{sqlx::MySqlPool, Database};
@@ -194,8 +198,14 @@ fn create(user: PUser<'_>) -> Template {
 }
 
 #[get("/table/<id>")]
-fn table(id: &str, user: PUser<'_>) -> Template {
-    Template::render(
+fn table(id: &str, user: PUser<'_>, state: &State<GlobalState>) -> Result<Template, Status> {
+    {
+        let guard = state.map.guard();
+        if state.map.get(id, &guard).is_none() {
+            return Err(Status::NotFound);
+        }
+    }
+    Ok(Template::render(
         "table",
         TemplateCtx {
             page: "table",
@@ -203,7 +213,31 @@ fn table(id: &str, user: PUser<'_>) -> Template {
             user: user.map(|u| u.info().clone()),
             update_url: None,
         },
-    )
+    ))
+}
+
+#[derive(Debug, FromForm)]
+struct FindTable<'a> {
+    code: &'a str,
+}
+
+#[post("/find", data = "<data>")]
+fn find_table(data: Form<FindTable<'_>>, state: &State<GlobalState>, user: PUser<'_>) -> Result<Redirect, (Status, Template)> {
+    {
+        let guard = state.map.guard();
+        if state.map.get(data.code, &guard).is_none() {
+            return Err((Status::BadRequest, Template::render(
+                "find",
+                TemplateCtx {
+                    page: "find",
+                    error: Some("Table not found"),
+                    user: user.map(|u| u.info().clone()),
+                    update_url: None,
+                },
+            )));
+        }
+    }
+    Ok(Redirect::to(rocket::uri!(table(id = data.code))))
 }
 
 #[derive(Debug, Serialize)]
@@ -646,7 +680,8 @@ fn launch() -> _ {
                 handle_message,
                 create,
                 create_table,
-                get_icon_pack
+                get_icon_pack,
+                find_table,
             ],
         )
 }
