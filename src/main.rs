@@ -580,6 +580,7 @@ enum TableUpdate {
     ElementCreate {
         icon_pack: u32,
         icon_id: u32,
+        id: u32,
         top: usize,
         left: usize,
     },
@@ -589,14 +590,14 @@ enum TableUpdate {
 async fn handle_message(
     id: &str,
     state: &State<GlobalState>,
-    update: Json<TableUpdate>,
+    mut update: Json<TableUpdate>,
     ws: &Channel<'_>,
 ) {
     println!("Update: {:?}", &*update);
     {
         let guard = state.map.guard();
         if let Some(t) = state.map.get(id, &guard) {
-            match &*update {
+            match &mut *update {
                 TableUpdate::Position { id, top, left } => {
                     let el_guard = t.elements.guard();
                     if let Some(el) = t.elements.get(id, &el_guard) {
@@ -616,6 +617,7 @@ async fn handle_message(
                 TableUpdate::ElementCreate {
                     icon_pack,
                     icon_id,
+                    id,
                     top,
                     left,
                 } => {
@@ -626,14 +628,14 @@ async fn handle_message(
                             return;
                         }
                     }
-                    let id = t.cur_id.fetch_add(1, std::sync::atomic::Ordering::AcqRel);
+                    *id = t.cur_id.fetch_add(1, std::sync::atomic::Ordering::AcqRel);
                     let el_guard = t.elements.guard();
                     t.elements.insert(
-                        id,
+                        *id,
                         ElementState {
                             icon_pack: *icon_pack,
                             icon_id: *icon_id,
-                            element_id: id,
+                            element_id: *id,
                             top: AtomicUsize::new(*top),
                             left: AtomicUsize::new(*left),
                         },

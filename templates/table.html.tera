@@ -3,8 +3,31 @@
 {% block body_class %}vh-100{% endblock body_class %}
 {% block content %}
 <div class="container-fluid flex-grow-1 overflow-scroll p-0">
-  <div style="width: 2000px; height: 2000px" id="tabletop">
-    {#<div id="draggable" style="width: fit-content;"> Some Content</div>#}
+  <div style="position: relative;width: 2000px; height: 2000px" id="tabletop">
+  </div>
+  <div class="position-absolute bottom-0 start-0 m-4 container row p-0">
+    <button type="button" data-bs-toggle="offcanvas" data-bs-target="#addDialog" class="btn btn-primary circle-icon me-2">{{ icons::plus() }}</button>
+    <button type="button" data-bs-toggle="offcanvas" data-bs-target="#settingsDialog" class="btn btn-primary circle-icon me-2">{{ icons::gear() }}</button>
+    <button type="button" id="delete" class="btn btn-primary circle-icon ctx-icon d-none me-2">{{ icons::trash() }}</button>
+  </div>
+</div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="addDialog" aria-labelledby="addLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="addLabel">Add items</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="accordian" id="addDialogMenu">
+    </div>
+  </div>
+</div>
+<div class="offcanvas offcanvas-start" tabindex="-1" id="settingsDialog" aria-labelledby="settingsLabel">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="settingsLabel">Table Settings</h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+    TODO!
   </div>
 </div>
 {% endblock content %}
@@ -12,3 +35,6 @@
 <script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
 <script src="/js/table.js"></script>
 {% endblock script %}
+{% block footer %}
+{# Remove default footer #}
+{% endblock footer %}
