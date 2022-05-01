@@ -206,6 +206,9 @@ struct LoginInfo<'a> {
     username: &'a str,
     password: Password<'a>,
 }
+impl std::fmt::Debug for LoginInfo<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "")}
+}
 
 #[post("/account/login", data = "<login_info>")]
 async fn login(
@@ -317,6 +320,10 @@ struct UserCreateInfo<'a> {
     username: UserId<'a>,
     password: Password<'a>,
     email: &'a str,
+}
+
+impl std::fmt::Debug for UserCreateInfo<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "")}
 }
 
 #[post("/account/create", data = "<login_info>")]
@@ -513,6 +520,9 @@ async fn update_account_email(
 struct UpdatePassword<'a> {
     old_password: Password<'a>,
     new_password: Password<'a>,
+}
+impl std::fmt::Debug for UpdatePassword<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "")}
 }
 
 #[post("/account/update/password", data = "<changes>")]

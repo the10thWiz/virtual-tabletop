@@ -1,0 +1,94 @@
+{% extends "base" %}
+{% block title %}Virtual Tabletop{% endblock title %}
+{% block content %}
+<div class="container-fluid d-flex flex-column align-items-center" style="height: 0;">
+  <div class="card position-relative fs-2 bg-dark text-white" style="z-index: 100; top: -1rem;">
+    <div class="card-body">
+      Virtual Tabletop options
+    </div>
+  </div>
+  {% if user.username is defined %}
+    {% set default_name = user.username ~ "'s Tabletop" %}
+  {% else %}
+    {% set default_name = "Guest Tabletop" %}
+  {% endif %}
+  <div class="row container-fluid">
+    <div class="col-2"></div>
+    <div class="col gy-2 flex-grow-1">
+      <div class="input-group mb-3">
+        <input class="form-control" type="text" id="name" value="{{ default_name }}" />
+        <input class="btn btn-primary" type="button" id="create" value="Create Tabletop" />
+      </div>
+      <div class="input-group mb-3">
+        <select class="form-select" aria-label="Table sharing" id="sharing">
+          <option value="public">Public</option>
+          <option value="password">Password Protected</option>
+          <option value="whitelist">Invite Only</option>
+        </select>
+        <span class="input-group-text d-none" id="sharing_warn">Guests can't join Invite only tables</span>
+        {# TODO: update note on change #}
+      </div>
+      <div class="input-group mb-3">
+        <span class="input-group-text d-none">Item packs</span>
+        <input type="text" class="form-control" placeholder="Find Item pack" id="search_input" />
+        <button class="btn btn-outline-secondary" type="button" id="search_button">
+          {{ icons::search_fill() }}
+        </button>
+      </div>
+    </div>
+    <div class="col-2"></div>
+  </div>
+  <div class="row container-fluid">
+    {% for pack in item_packs %}
+      <label class="card m-1" style="width: 18rem;" for="{{ pack.id }}_switch">
+        {% if pack.img is defined and pack.img is string %}
+          <img class="card-img-top" src="{{ pack.img | safe }}" alt="Image of {{ pack.name }}" />
+        {% endif %}
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title form-check form-switch">
+            <input class="form-check-input item_pack" type="checkbox" id="{{ pack.id }}_switch" name="{{ pack.name }}"
+              {% if pack.default == true %}checked{% endif %}>
+            {{ pack.name }}
+          </h5>
+          <p class="card-text flex-grow-1">{{ pack.desc }}</p>
+        </div>
+        <div class="card-footer text-muted">{{ pack.author }}</div>
+      </label>
+    {% endfor %}
+  </div>
+</div>
+{% endblock content %}
+{% block script %}
+<script>
+{# TODO: fetch more icon packs on search #}
+let sharing = $("#sharing").on("change", function(e) {
+  if($(e.target).val() == "whitelist") {
+    $("#sharing_warn").removeClass("d-none");
+  } else {
+    $("#sharing_warn").addClass("d-none");
+  }
+});
+if(sharing.val() == "whitelist") {
+  $("#sharing_warn").removeClass("d-none");
+} else {
+  $("#sharing_warn").addClass("d-none");
+}
+$("#create").on("click", function() {
+  let opts = {
+    name: $("#name").val(),
+    sharing: $("#sharing").val(),
+    icons: [],
+  }
+  $(".item_pack").each(function() {
+    let el = $(this);
+    if(el.prop("checked") == "true") {
+      opts.icons.push(el.attr("name"));
+    }
+  });
+  $.post("/api/table/create", JSON.stringify(opts)).then(function(data) {
+    console.log(data);
+    window.location.pathname = "/table/" + data.id;
+  });
+});
+</script>
+{% endblock script %}

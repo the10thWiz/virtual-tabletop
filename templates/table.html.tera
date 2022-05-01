@@ -1,0 +1,14 @@
+{% extends "base" %}
+{% block title %}Virtual Tabletop{% endblock title %}
+{% block body_class %}vh-100{% endblock body_class %}
+{% block content %}
+<div class="container-fluid flex-grow-1 overflow-scroll p-0">
+  <div style="width: 2000px; height: 2000px" id="tabletop">
+    {#<div id="draggable" style="width: fit-content;"> Some Content</div>#}
+  </div>
+</div>
+{% endblock content %}
+{% block script %}
+<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"></script>
+<script src="/js/table.js"></script>
+{% endblock script %}

@@ -1,0 +1,23 @@
+{% extends "base" %}
+{% block title %}Virtual Tabletop{% endblock title %}
+{% block content %}
+<div class="container-fluid d-flex flex-column align-items-center" style="height: 0;">
+  <div class="card position-relative fs-2 bg-dark text-white" style="z-index: 100; top: -1rem;">
+    <div class="card-body">
+      Enter code to find a Virtual Tabletop
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-2"></div>
+    <div class="col gy-2">
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Enter Code" id="search_input" />
+        <button class="btn btn-outline-secondary" type="button" id="search_button">
+          {{ icons::search_fill() }}
+        </button>
+      </div>
+    </div>
+    <div class="col-2"></div>
+  </div>
+</div>
+{% endblock content %}

@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}{% endblock title %}</title>
   <link rel="stylesheet" href="/css/bootstrap.css" />
-  <link rel="stylesheet" href="/css/free.min.css" />
+  <link rel="stylesheet" href="/css/font-awesome.min.css" />
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="author help" href="/help" />
   {% if update_url is defined and update_url != "" %}
@@ -17,7 +17,7 @@
   {% endif %}
 </head>
 
-<body class="d-flex flex-column justify-content-start min-vh-100" style="overflow-x: hidden;">
+<body class="d-flex flex-column justify-content-start min-vh-100 {% block body_class %}{% endblock body_class %}" style="overflow-x: hidden;">
 {% block nav_bar %}
   <nav class="container-fluid navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
     <a class="navbar-brand" href="/">Virtual tabletop</a>
@@ -28,10 +28,10 @@
     <div class="collapse navbar-collapse justify-content-end" id="navbarSupportedContent">
       <ul class="navbar-nav mb-2 mb-lg-0">
         <li class="nav-item">
-          <a class="nav-link" {% if page=="TODO" %}href="#" {% else %}href="/table/find" {% endif %}>Find Table</a>
+          <a class="nav-link" {% if page=="TODO" %}href="#" {% else %}href="/find" {% endif %}>Find Table</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" {% if page=="TODO" %}href="#" {% else %}href="/table/create" {% endif %}>Create Table</a>
+          <a class="nav-link" {% if page=="TODO" %}href="#" {% else %}href="/create" {% endif %}>Create Table</a>
         </li>
         {% if user.username is defined %}
         <li class="nav-item">
@@ -89,7 +89,7 @@
   </footer>
   {% endblock footer %}
 
-  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/bootstrap.bundle.js"></script>
   <script src="/js/jquery-3.6.0.min.js"></script>
   {% block script %}{% endblock %}
 </body>

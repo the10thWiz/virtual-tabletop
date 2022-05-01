@@ -12,6 +12,8 @@ rocket_db_pools = { version = "0.1.0-rc", path = "../Rocket/contrib/db_pools/lib
 sqlx = { version = "*", features = ["macros"] }
 rocket-auth = { path = "../rocket-auth/", features = ["google", "tera", "sqlx"] }
 serde = { version = "*", features = ["derive"] }
-flurry = "*"
+flurry = { version = "*", features = ["serde"] }
 enum-utils = "0.1.2"
 serde_repr = "^0.1"
+chrono = { version = "*", features = ["serde"] }
+rand = "*"
