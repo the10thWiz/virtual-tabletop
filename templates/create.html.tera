@@ -22,11 +22,13 @@
       <div class="input-group mb-3">
         <select class="form-select" aria-label="Table sharing" id="sharing">
           <option value="public">Public</option>
-          <option value="password">Password Protected</option>
-          <option value="whitelist">Invite Only</option>
+          {#<option value="password">Password Protected</option>#}
+          {#<option value="whitelist">Invite Only</option>#}
+          {# TODO: Decide whether to have password (it may be better to just to public/private,
+          and private requires the host to approve anyone trying to join) #}
         </select>
         <span class="input-group-text d-none" id="sharing_warn">Guests can't join Invite only tables</span>
-        {# TODO: update note on change #}
+        <input type="password" class="form-control d-none" id="password" placeholder="Room Password" />
       </div>
       <div class="input-group mb-3">
         <span class="input-group-text d-none">Item packs</span>
@@ -61,27 +63,39 @@
 {% block script %}
 <script>
 {# TODO: fetch more icon packs on search #}
-let sharing = $("#sharing").on("change", function(e) {
-  if($(e.target).val() == "whitelist") {
+function set_sharing(sharing) {
+  if(sharing.val() == "whitelist") {
     $("#sharing_warn").removeClass("d-none");
   } else {
     $("#sharing_warn").addClass("d-none");
   }
-});
-if(sharing.val() == "whitelist") {
-  $("#sharing_warn").removeClass("d-none");
-} else {
-  $("#sharing_warn").addClass("d-none");
+  if(sharing.val() == "password") {
+    $("#password").removeClass("d-none");
+  } else {
+    $("#password").addClass("d-none");
+  }
 }
+let sharing = $("#sharing").on("change", function(e) {
+  set_sharing(sharing);
+});
+set_sharing(sharing);
+
 $("#create").on("click", function() {
   let opts = {
     name: $("#name").val(),
-    sharing: $("#sharing").val(),
+    sharing: {},
     icons: [],
+  }
+  let sharing = $("#sharing").val();
+  if(sharing === "password") {
+    opts.sharing.password = $("#password").val();
+  } else if(sharing === "whitelist") {
+    console.log("TODO: whitelist version")
+    return;
   }
   $(".item_pack").each(function() {
     let el = $(this);
-    if(el.prop("checked") == "true") {
+    if(el.prop("checked")) {
       opts.icons.push(el.attr("name"));
     }
   });

@@ -12,35 +12,42 @@ let ws = (function() {
     let table_id = window.location.pathname.replace("/table/", "");
     let top = $("#tabletop");
 
-    let ws = new WebSocket("ws://localhost:8000/ws/table/" + table_id);
-    ws.addEventListener("open", function(e) {
-        console.log("connected");
-    });
-    ws.addEventListener("close", function(e) {
-        console.log("Disconnected");
-    });
-    ws.addEventListener("error", function(e) {
-        console.log("WS Error");
-        console.log(e);
-    });
-    ws.addEventListener("message", function(e) {
-        let data = JSON.parse(e.data);
-        if (data.t == "position") {
-            $("#el_" + data.id).css("top", data.top).css("left", data.left);
-        } else if (data.t == "element_create") {
-            //$("#el_" + data.id).css("top", data.top).css("left", data.left);
-            top.append(`<div id="el_${data.id}"
-    style="width: fit-content;display: none;"
-    data-pack="${data.icon_pack}" data-icon="${data.icon_id}"></div>`);
-            let el = $("#el_" + data.id);
-            el_mods(el, data);
-            icon_fill(el, icon_packs[data.icon_pack].icons[data.icon_id]);
-        } else if (data.t == "element_delete") {
-            $("#el_" + data.id).remove();
-        } else {
-            console.log("TODO: " + data.t);
-        }
-    });
+    let ws = undefined;
+
+    function create_ws() {
+        let ret = new WebSocket("ws://localhost:8000/ws/table/" + table_id);
+        ret.addEventListener("open", function(_e) {
+            console.log("Connected to server");
+        });
+        ret.addEventListener("close", function(_e) {
+            console.log("Retrying connection");
+            ws = create_ws();
+        });
+        ret.addEventListener("error", function(e) {
+            console.log("WS Error");
+            console.log(e);
+        });
+        ret.addEventListener("message", function(e) {
+            let data = JSON.parse(e.data);
+            if (data.t == "position") {
+                $("#el_" + data.id).css("top", data.top).css("left", data.left);
+            } else if (data.t == "element_create") {
+                //$("#el_" + data.id).css("top", data.top).css("left", data.left);
+                top.append(`<div id="el_${data.id}"
+        class="item"
+        data-pack="${data.icon_pack}" data-icon="${data.icon_id}"></div>`);
+                let el = $("#el_" + data.id);
+                el_mods(el, data);
+                icon_fill(el, icon_packs[data.icon_pack].icons[data.icon_id]);
+            } else if (data.t == "element_delete") {
+                $("#el_" + data.id).remove();
+            } else {
+                console.log("TODO: " + data.t);
+            }
+        });
+        return ret;
+    }
+    ws = create_ws();
 
     function icon_fill(el, icon) {
         if (icon.t === "image") {
@@ -113,20 +120,20 @@ let ws = (function() {
     function el_mods(el, data) {
         el.draggable(drag_settings);
         el.on("contextmenu", function(e) {
-            e.preventDefault();
-            if(el.hasClass("selected")) {
-                el.removeClass("selected");
-                $(".ctx-icon").addClass("d-none");
-            } else {
-                $(".item.selected").removeClass("selected");
-                el.addClass("selected");
-                $(".ctx-icon.d-none").removeClass("d-none");
-            }
-        })
-        .css('top', data.top)
-        .css('left', data.left)
-        .css('position', 'absolute')
-        .css('display', 'block');
+                e.preventDefault();
+                if (el.hasClass("selected")) {
+                    el.removeClass("selected");
+                    $(".ctx-icon").addClass("d-none");
+                } else {
+                    $(".item.selected").removeClass("selected");
+                    el.addClass("selected");
+                    $(".ctx-icon.d-none").removeClass("d-none");
+                }
+            })
+            .css('top', data.top)
+            .css('left', data.left)
+            .css('position', 'absolute')
+            .css('display', 'block');
     }
 
     let drag_settings = {
