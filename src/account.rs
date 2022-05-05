@@ -10,7 +10,7 @@ use rocket::{
     get,
     http::Status,
     post,
-    request::{FromParam, FromRequest, Outcome},
+    request::{FromRequest, Outcome},
     response::Redirect,
     routes,
     serde::json::Json,
@@ -23,7 +23,7 @@ use rocket_db_pools::{sqlx, Connection};
 use rocket_dyn_templates::Template;
 use serde::{Deserialize, Serialize};
 
-use crate::{APIResponse, DBConn, Empty, Error, TemplateCtx};
+use crate::{APIResponse, DBConn, Empty, TemplateCtx};
 
 pub struct Routes;
 
@@ -77,12 +77,12 @@ mod permissions {
     }
 
     impl Role {
-        pub fn as_str(&self) -> &'static str {
-            match self {
-                Self::Admin => "Admin",
-                Self::User => "Owner",
-            }
-        }
+        //pub fn as_str(&self) -> &'static str {
+            //match self {
+                //Self::Admin => "Admin",
+                //Self::User => "User",
+            //}
+        //}
     }
 
     impl<'a> FromParam<'a> for Role {
@@ -380,9 +380,9 @@ async fn create_user(
     }
 }
 
-pub fn user_map(user: PUser<'_>) -> Option<UserInfo> {
-    user.map(|u| u.info().to_owned())
-}
+//pub fn user_map(user: PUser<'_>) -> Option<UserInfo> {
+    //user.map(|u| u.info().to_owned())
+//}
 
 #[get("/account/login")]
 fn login_page(user: PUser<'_>) -> Result<Template, Redirect> {

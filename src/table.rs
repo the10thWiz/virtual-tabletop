@@ -1,21 +1,35 @@
-use std::{sync::{atomic::{AtomicU32, AtomicUsize}, Arc}, future::Future, time::Duration};
+use std::{
+    future::Future,
+    sync::{
+        atomic::{AtomicU32, AtomicUsize},
+        Arc,
+    },
+    time::Duration,
+};
 
 use chrono::Utc;
 use rand::Rng;
 use rocket::{
     fairing::{Fairing, Info, Kind},
-    serde::json::Json,
+    form::{Form, FromForm},
     get,
     http::Status,
     message, post,
     response::Redirect,
-    routes, Build, form::{Form, FromForm}, Rocket, State, websocket::Channel,
+    routes,
+    serde::json::Json,
+    websocket::Channel,
+    Build, Rocket, State,
 };
+use rocket_auth::UserId;
 use rocket_dyn_templates::Template;
-use serde::{Deserialize, Serialize};
-use serde_repr::{Serialize_repr, Deserialize_repr};
+use rocket::serde::{Deserialize, Serialize};
+//use serde_repr::{Deserialize_repr, Serialize_repr};
 
-use crate::{account::{PUser, DBConnInst}, APIResponse, TemplateCtx, Error};
+use crate::{
+    account::{DBConnInst, PUser},
+    APIResponse, Error, TemplateCtx,
+};
 
 pub struct Routes;
 
@@ -45,6 +59,7 @@ impl Fairing for Routes {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(crate = "rocket::serde")]
 struct CreateCtx {
     #[serde(flatten)]
     tem: TemplateCtx,
@@ -52,6 +67,7 @@ struct CreateCtx {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(crate = "rocket::serde")]
 struct ItemPack {
     id: String,
     name: String,
@@ -149,11 +165,14 @@ fn find_table(
 }
 
 #[derive(Debug, Serialize)]
+#[serde(crate = "rocket::serde")]
 struct TableState {
     created: chrono::DateTime<Utc>,
     name: String,
     #[serde(skip)]
     sharing: SharingType,
+    #[serde(skip)] // TODO: host
+    host: Option<UserId<'static>>,
     #[serde(skip)]
     cur_id: AtomicU32,
     elements: flurry::HashMap<u32, ElementState>,
@@ -166,6 +185,7 @@ impl Clone for TableState {
             created: self.created.clone(),
             name: self.name.clone(),
             sharing: self.sharing.clone(),
+            host: self.host.as_ref().map(|u| u.clone()),
             cur_id: AtomicU32::new(self.cur_id.load(std::sync::atomic::Ordering::Acquire)),
             elements: self.elements.clone(),
             icon_packs: self.icon_packs.clone(),
@@ -174,11 +194,17 @@ impl Clone for TableState {
 }
 
 impl TableState {
-    fn new(name: String, sharing: SharingType, icon_packs: flurry::HashSet<u32>) -> Self {
+    fn new(
+        name: String,
+        sharing: SharingType,
+        host: Option<UserId<'static>>,
+        icon_packs: flurry::HashSet<u32>,
+    ) -> Self {
         Self {
             created: chrono::Utc::now(),
             name,
             sharing,
+            host,
             cur_id: AtomicU32::new(1),
             elements: flurry::HashMap::new(),
             icon_packs,
@@ -213,6 +239,7 @@ impl TableState {
             created: chrono::Utc::now(),
             name: "Default Tester".into(),
             sharing: SharingType::Public {},
+            host: None,
             cur_id: AtomicU32::new(2),
             elements: map,
             icon_packs,
@@ -221,6 +248,7 @@ impl TableState {
 }
 
 #[derive(Debug, Serialize)]
+#[serde(crate = "rocket::serde")]
 struct ElementState {
     icon_pack: u32,
     icon_id: u32,
@@ -243,6 +271,7 @@ struct ElementState {
 }
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(crate = "rocket::serde")]
 enum Property {
     Single(ItemState),
     List(flurry::HashSet<ItemState>),
@@ -250,6 +279,7 @@ enum Property {
 }
 
 #[derive(Debug, Serialize, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(crate = "rocket::serde")]
 enum ItemState {
     Icon { icon_pack: u32, icon_id: u32 },
     Num(usize),
@@ -257,6 +287,7 @@ enum ItemState {
 }
 
 #[derive(Debug, Serialize, Hash, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[serde(crate = "rocket::serde")]
 enum Action {
     Draw(String),
     Select(String),
@@ -341,6 +372,7 @@ fn table_state(id: &str, state: &State<GlobalState>) -> APIResponse<TableState> 
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
+#[serde(crate = "rocket::serde")]
 #[serde(rename_all = "snake_case", untagged)]
 enum SharingType {
     Public {},
@@ -349,6 +381,7 @@ enum SharingType {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 struct TableOptions<'a> {
     name: &'a str,
     sharing: SharingType,
@@ -356,6 +389,7 @@ struct TableOptions<'a> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 struct TableName {
     id: String,
 }
@@ -364,6 +398,7 @@ struct TableName {
 async fn create_table(
     options: Json<TableOptions<'_>>,
     state: &State<GlobalState>,
+    user: PUser<'_>,
     mut db: DBConnInst,
 ) -> APIResponse<TableName> {
     let options = options.into_inner();
@@ -381,7 +416,12 @@ async fn create_table(
             });
         }
     };
-    let table = TableState::new(name, options.sharing, ids);
+    let table = TableState::new(
+        name,
+        options.sharing,
+        user.as_ref().map(|u| u.id().to_owned()),
+        ids,
+    );
     let guard = state.map.guard();
     let mut rng = rand::thread_rng();
     let id = format!("{:X}", rng.gen::<u16>());
@@ -413,12 +453,14 @@ async fn lookup_ids(
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 struct IconPack {
     name: String,
     icons: Vec<Icon>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 #[serde(tag = "t", rename_all = "snake_case")]
 enum Icon {
     Image {
@@ -438,8 +480,9 @@ enum Icon {
     },
 }
 
-#[derive(Debug, Clone, Copy, Serialize_repr, Deserialize_repr, enum_utils::TryFromRepr)]
+#[derive(Debug, Clone, Copy, enum_utils::TryFromRepr, Serialize, Deserialize)]
 #[repr(i32)]
+#[serde(crate = "rocket::serde", into = "i32", try_from = "i32")]
 pub enum IconType {
     Image = 1,
     Icon = 2,
@@ -503,6 +546,7 @@ async fn get_icon_pack(id: u32, mut db: DBConnInst) -> APIResponse<IconPack> {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 #[serde(tag = "t", rename_all = "snake_case")]
 enum TableUpdate {
     ElementDelete {

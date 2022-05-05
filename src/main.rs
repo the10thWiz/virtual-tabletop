@@ -1,27 +1,11 @@
-use std::{
-    sync::{
-        atomic::{AtomicU32, AtomicUsize},
-        Arc, RwLock,
-    },
-    time::Duration, future::Future,
-};
-
 use account::{DBConnInst, PUser, UserInfo};
-use chrono::Utc;
-use rand::Rng;
 use rocket::{
-    form::Form,
     fs::{FileServer, Options},
-    futures::TryStreamExt,
     get,
-    http::{uri, Status},
-    message, post,
     request::FromParam,
-    response::Redirect,
     routes,
     serde::json::Json,
-    websocket::Channel,
-    FromForm, Responder, Shutdown, State,
+    Responder,
 };
 use rocket_auth::AuthFairing;
 use rocket_db_pools::{sqlx::MySqlPool, Database};
@@ -161,15 +145,16 @@ async fn main() -> Result<(), rocket::Error> {
         }))
         .attach(auth)
         .attach(account::Routes)
-        .mount("/", FileServer::new("static", Options::default()))
+        .attach(table::Routes)
         .mount(
             "/",
-            routes![
-                index,
-                pages,
-            ],
+            FileServer::new("static", Options::default()),
         )
-        .ignite().await?;
-    let (res, _) = rocket::tokio::join![r.launch(), task];
-    res
+        .mount("/", routes![index, pages,])
+        .ignite()
+        .await?;
+    rocket::tokio::select! {
+        res = r.launch() => res,
+        _ = task => panic!("Task should never retrun"),
+    }
 }
