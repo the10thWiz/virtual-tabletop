@@ -24,7 +24,7 @@ use rocket::{
 use rocket_auth::UserId;
 use rocket_dyn_templates::Template;
 use rocket::serde::{Deserialize, Serialize};
-//use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 
 use crate::{
     account::{DBConnInst, PUser},
@@ -480,9 +480,8 @@ enum Icon {
     },
 }
 
-#[derive(Debug, Clone, Copy, enum_utils::TryFromRepr, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, enum_utils::TryFromRepr, Serialize_repr, Deserialize_repr)]
 #[repr(i32)]
-#[serde(crate = "rocket::serde", into = "i32", try_from = "i32")]
 pub enum IconType {
     Image = 1,
     Icon = 2,
@@ -571,15 +570,14 @@ enum TableUpdate {
         act: String,
     },
 }
-
-#[message("/ws/table/<id>", data = "<update>")]
+#[message("/ws/table/<id>", data = "<update>")]//, allowed_origins = ["pomesdev.com", "localhost"]
 async fn handle_message(
     id: &str,
     state: &State<GlobalState>,
     mut update: Json<TableUpdate>,
     ws: &Channel<'_>,
+    user: PUser<'_>,
 ) {
-    println!("Update: {:?}", &*update);
     {
         let guard = state.map.guard();
         if let Some(t) = state.map.get(id, &guard) {

@@ -1,3 +1,5 @@
+use std::future::Future;
+
 use account::{DBConnInst, PUser, UserInfo};
 use rocket::{
     fs::{FileServer, Options},
@@ -5,7 +7,7 @@ use rocket::{
     request::FromParam,
     routes,
     serde::json::Json,
-    Responder,
+    Responder, Rocket, Ignite,
 };
 use rocket_auth::AuthFairing;
 use rocket_db_pools::{sqlx::MySqlPool, Database};
@@ -130,8 +132,7 @@ fn pages(page: Page, user: PUser<'_>) -> Template {
     )
 }
 
-#[rocket::main]
-async fn main() -> Result<(), rocket::Error> {
+async fn rocket() -> Result<(Rocket<Ignite>, impl Future<Output = ()>), rocket::Error> {
     let auth = AuthFairing::<DBConnInst>::fairing();
     let google_button = auth.google_button();
     let (state, task) = GlobalState::new();
@@ -153,8 +154,29 @@ async fn main() -> Result<(), rocket::Error> {
         .mount("/", routes![index, pages,])
         .ignite()
         .await?;
+    Ok((r, task))
+}
+
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error> {
+    let (r, task) = rocket().await?;
     rocket::tokio::select! {
         res = r.launch() => res,
         _ = task => panic!("Task should never retrun"),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use rocket::uri;
+
+    #[rocket::async_test]
+    async fn test_routing() {
+        use rocket::local::asynchronous::Client;
+
+        let (r, _) = super::rocket().await.expect("Failed to build rocket");
+        let client = Client::untracked(r).await.expect("Failed to launch rocket");
+        let res = client.get(uri!("/")).dispatch().await;
+        assert_eq!(res.route().expect("Route not defined").handler, super::index {}.into_info().handler);
     }
 }
